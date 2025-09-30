@@ -6,6 +6,8 @@ import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { api, Configuration } from '@/lib/api';
 import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ConfigurationPaneProps {
   onGenerate: (config: GenerationConfig) => void;
@@ -109,45 +111,40 @@ export function ConfigurationPane({ onGenerate, isGenerating, showEnvironment = 
         {showEnvironment && (
           <Card className="p-4 mb-6">
             <Label className="text-sm font-semibold mb-3 block">Environment</Label>
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              {config?.environments.map((env) => (
-                <Button
-                  key={env}
-                  variant={selectedEnvironment === env ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => {
-                    setSelectedEnvironment(env);
-                    setCustomEnvironment('');
-                    setShowCustomEnv(false);
-                  }}
-                  disabled={isGenerating}
-                  className="justify-start text-xs"
-                >
-                  {env.replace(/-/g, ' ').replace(/\(|\)/g, '')}
-                </Button>
-              ))}
-            </div>
-            <Button
-              variant={showCustomEnv ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => {
-                setShowCustomEnv(!showCustomEnv);
-                if (!showCustomEnv) {
+            <Select 
+              value={selectedEnvironment || (showCustomEnv ? 'custom' : '')} 
+              onValueChange={(value) => {
+                if (value === 'custom') {
+                  setShowCustomEnv(true);
                   setSelectedEnvironment('');
+                } else {
+                  setSelectedEnvironment(value);
+                  setCustomEnvironment('');
+                  setShowCustomEnv(false);
                 }
               }}
               disabled={isGenerating}
-              className="w-full"
             >
-              Custom Environment
-            </Button>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select environment" />
+              </SelectTrigger>
+              <SelectContent>
+                {config?.environments.map((env) => (
+                  <SelectItem key={env} value={env}>
+                    {env.replace(/-/g, ' ').replace(/\(|\)/g, '')}
+                  </SelectItem>
+                ))}
+                <SelectItem value="custom">Custom Environment</SelectItem>
+              </SelectContent>
+            </Select>
             {showCustomEnv && (
-              <Input
+              <Textarea
                 placeholder="Enter custom environment"
                 value={customEnvironment}
                 onChange={(e) => setCustomEnvironment(e.target.value)}
                 disabled={isGenerating}
-                className="mt-2"
+                className="mt-3"
+                rows={3}
               />
             )}
           </Card>
@@ -186,12 +183,13 @@ export function ConfigurationPane({ onGenerate, isGenerating, showEnvironment = 
             Custom Subject
           </Button>
           {showCustomSubject && (
-            <Input
+            <Textarea
               placeholder="Enter custom subject"
               value={customSubject}
               onChange={(e) => setCustomSubject(e.target.value)}
               disabled={isGenerating}
-              className="mt-2"
+              className="mt-3"
+              rows={3}
             />
           )}
         </Card>
@@ -229,32 +227,34 @@ export function ConfigurationPane({ onGenerate, isGenerating, showEnvironment = 
           <Label htmlFor="numImages" className="text-sm font-semibold mb-2 block">
             Number of Images (1-30)
           </Label>
-          <Input
-            id="numImages"
-            type="number"
-            min="1"
-            max="30"
-            value={numberOfImages}
-            onChange={(e) => setNumberOfImages(Math.min(30, Math.max(1, parseInt(e.target.value) || 1)))}
-            disabled={isGenerating}
-          />
+          <div className="flex gap-3">
+            <Input
+              id="numImages"
+              type="number"
+              min="1"
+              max="30"
+              value={numberOfImages}
+              onChange={(e) => setNumberOfImages(Math.min(30, Math.max(1, parseInt(e.target.value) || 1)))}
+              disabled={isGenerating}
+              className="flex-1"
+            />
+            <Button
+              onClick={handleGenerate}
+              disabled={isGenerating}
+              size="lg"
+              className="flex-1"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                'Generate'
+              )}
+            </Button>
+          </div>
         </Card>
-
-        <Button
-          onClick={handleGenerate}
-          disabled={isGenerating}
-          className="w-full"
-          size="lg"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            'Generate'
-          )}
-        </Button>
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Download, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import JSZip from 'jszip';
@@ -17,6 +19,8 @@ interface OutputPaneProps {
 }
 
 export function OutputPane({ images, onRemove, isGenerating, generationProgress }: OutputPaneProps) {
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
   const handleDownloadZip = async () => {
     if (images.length === 0) {
       toast.error('No images to download');
@@ -82,15 +86,17 @@ export function OutputPane({ images, onRemove, isGenerating, generationProgress 
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {images.map((image) => (
-            <Card key={image.id} className="overflow-hidden">
-              <div className="relative group">
+          {images.map((image) => {
+            const imageUrl = `data:image/png;base64,${image.data.replace(/^data:image\/\w+;base64,/, '')}`;
+            return (
+              <Card key={image.id} className="overflow-hidden">
                 <img
-                  src={`data:image/png;base64,${image.data.replace(/^data:image\/\w+;base64,/, '')}`}
+                  src={imageUrl}
                   alt="Generated"
-                  className="w-full h-auto"
+                  className="w-full h-auto cursor-pointer"
+                  onClick={() => setPreviewImage(imageUrl)}
                 />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div className="p-3 flex justify-center">
                   <Button
                     variant="destructive"
                     size="sm"
@@ -100,10 +106,22 @@ export function OutputPane({ images, onRemove, isGenerating, generationProgress 
                     Remove
                   </Button>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
+
+        <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+          <DialogContent className="max-w-4xl w-full p-0">
+            {previewImage && (
+              <img
+                src={previewImage}
+                alt="Preview"
+                className="w-full h-auto"
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
