@@ -13,6 +13,9 @@ interface ConfigurationPaneProps {
   onGenerate: (config: GenerationConfig) => void;
   isGenerating: boolean;
   showEnvironment?: boolean;
+  showNumberOfImages?: boolean;
+  uploadedImage?: string | null;
+  onImageUpload?: (image: string) => void;
 }
 
 export interface GenerationConfig {
@@ -24,7 +27,14 @@ export interface GenerationConfig {
   numberOfImages: number;
 }
 
-export function ConfigurationPane({ onGenerate, isGenerating, showEnvironment = true }: ConfigurationPaneProps) {
+export function ConfigurationPane({ 
+  onGenerate, 
+  isGenerating, 
+  showEnvironment = true, 
+  showNumberOfImages = true,
+  uploadedImage,
+  onImageUpload 
+}: ConfigurationPaneProps) {
   const [config, setConfig] = useState<Configuration | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedEnvironment, setSelectedEnvironment] = useState<string>('');
@@ -69,6 +79,18 @@ export function ConfigurationPane({ onGenerate, isGenerating, showEnvironment = 
     });
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        onImageUpload?.(base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleGenerate = () => {
     if (showEnvironment && !selectedEnvironment && !customEnvironment) {
       toast.error('Please select an environment');
@@ -107,6 +129,28 @@ export function ConfigurationPane({ onGenerate, isGenerating, showEnvironment = 
     <div className="space-y-6 p-6 overflow-y-auto h-full">
       <div>
         <h2 className="text-2xl font-bold text-foreground mb-6">Configuration</h2>
+
+        {onImageUpload && (
+          <Card className="p-4 mb-6">
+            <Label className="text-sm font-semibold mb-3 block">Upload Image</Label>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              disabled={isGenerating}
+              className="mb-3"
+            />
+            {uploadedImage && (
+              <div className="mt-3">
+                <img 
+                  src={uploadedImage} 
+                  alt="Uploaded preview" 
+                  className="w-full h-auto rounded-md border"
+                />
+              </div>
+            )}
+          </Card>
+        )}
 
         {showEnvironment && (
           <Card className="p-4 mb-6">
@@ -224,36 +268,57 @@ export function ConfigurationPane({ onGenerate, isGenerating, showEnvironment = 
         </Card>
 
         <Card className="p-4 mb-6">
-          <Label htmlFor="numImages" className="text-sm font-semibold mb-2 block">
-            Number of Images (1-30)
-          </Label>
-          <div className="flex gap-3">
-            <Input
-              id="numImages"
-              type="number"
-              min="1"
-              max="30"
-              value={numberOfImages}
-              onChange={(e) => setNumberOfImages(Math.min(30, Math.max(1, parseInt(e.target.value) || 1)))}
-              disabled={isGenerating}
-              className="flex-1"
-            />
+          {showNumberOfImages && (
+            <>
+              <Label htmlFor="numImages" className="text-sm font-semibold mb-2 block">
+                Number of Images (1-6)
+              </Label>
+              <div className="flex gap-3 mb-3">
+                <Input
+                  id="numImages"
+                  type="number"
+                  min="1"
+                  max="6"
+                  value={numberOfImages}
+                  onChange={(e) => setNumberOfImages(Math.min(6, Math.max(1, parseInt(e.target.value) || 1)))}
+                  disabled={isGenerating}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={handleGenerate}
+                  disabled={isGenerating}
+                  size="lg"
+                  className="flex-1"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    'Generate'
+                  )}
+                </Button>
+              </div>
+            </>
+          )}
+          {!showNumberOfImages && (
             <Button
               onClick={handleGenerate}
               disabled={isGenerating}
               size="lg"
-              className="flex-1"
+              className="w-full"
             >
               {isGenerating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
+                  Editing...
                 </>
               ) : (
-                'Generate'
+                'Edit Image'
               )}
             </Button>
-          </div>
+          )}
         </Card>
       </div>
     </div>

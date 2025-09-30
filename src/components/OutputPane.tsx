@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Download, X, Loader2 } from 'lucide-react';
+import { Download, X, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import JSZip from 'jszip';
 
@@ -20,6 +20,36 @@ interface OutputPaneProps {
 
 export function OutputPane({ images, onRemove, isGenerating, generationProgress }: OutputPaneProps) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewIndex, setPreviewIndex] = useState<number>(0);
+
+  const openPreview = (imageUrl: string, index: number) => {
+    setPreviewImage(imageUrl);
+    setPreviewIndex(index);
+  };
+
+  const closePreview = () => {
+    setPreviewImage(null);
+  };
+
+  const handleNext = () => {
+    const nextIndex = (previewIndex + 1) % images.length;
+    setPreviewIndex(nextIndex);
+    const nextImageUrl = `data:image/png;base64,${images[nextIndex].data.replace(/^data:image\/\w+;base64,/, '')}`;
+    setPreviewImage(nextImageUrl);
+  };
+
+  const handlePrevious = () => {
+    const prevIndex = previewIndex === 0 ? images.length - 1 : previewIndex - 1;
+    setPreviewIndex(prevIndex);
+    const prevImageUrl = `data:image/png;base64,${images[prevIndex].data.replace(/^data:image\/\w+;base64,/, '')}`;
+    setPreviewImage(prevImageUrl);
+  };
+
+  const handleRemoveFromPreview = () => {
+    const imageToRemove = images[previewIndex];
+    onRemove(imageToRemove.id);
+    closePreview();
+  };
 
   const handleDownloadZip = async () => {
     if (images.length === 0) {
@@ -85,8 +115,8 @@ export function OutputPane({ images, onRemove, isGenerating, generationProgress 
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {images.map((image) => {
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {images.map((image, index) => {
             const imageUrl = `data:image/png;base64,${image.data.replace(/^data:image\/\w+;base64,/, '')}`;
             return (
               <Card key={image.id} className="overflow-hidden">
@@ -94,7 +124,7 @@ export function OutputPane({ images, onRemove, isGenerating, generationProgress 
                   src={imageUrl}
                   alt="Generated"
                   className="w-full h-auto cursor-pointer"
-                  onClick={() => setPreviewImage(imageUrl)}
+                  onClick={() => openPreview(imageUrl, index)}
                 />
                 <div className="p-3 flex justify-center">
                   <Button
@@ -111,14 +141,46 @@ export function OutputPane({ images, onRemove, isGenerating, generationProgress 
           })}
         </div>
 
-        <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+        <Dialog open={!!previewImage} onOpenChange={closePreview}>
           <DialogContent className="max-w-4xl w-full p-0">
             {previewImage && (
-              <img
-                src={previewImage}
-                alt="Preview"
-                className="w-full h-auto"
-              />
+              <div className="relative">
+                <img
+                  src={previewImage}
+                  alt="Preview"
+                  className="w-full h-auto"
+                />
+                <div className="absolute top-1/2 left-4 transform -translate-y-1/2">
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    onClick={handlePrevious}
+                    className="rounded-full"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="absolute top-1/2 right-4 transform -translate-y-1/2">
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    onClick={handleNext}
+                    className="rounded-full"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleRemoveFromPreview}
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    Remove
+                  </Button>
+                </div>
+              </div>
             )}
           </DialogContent>
         </Dialog>
