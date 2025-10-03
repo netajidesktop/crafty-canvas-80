@@ -46,6 +46,7 @@ export function ConfigurationPane({
   const [includePrompt, setIncludePrompt] = useState('');
   const [excludePrompt, setExcludePrompt] = useState('');
   const [numberOfImages, setNumberOfImages] = useState(6);
+  const [showImagePreview, setShowImagePreview] = useState(false);
 
   useEffect(() => {
     loadConfiguration();
@@ -124,8 +125,6 @@ export function ConfigurationPane({
       </div>
     );
   }
-
-  const [showImagePreview, setShowImagePreview] = useState(false);
 
   return (
     <div className="space-y-6 p-6 overflow-y-auto h-full">
