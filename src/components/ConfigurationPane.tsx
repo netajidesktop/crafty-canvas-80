@@ -127,7 +127,7 @@ export function ConfigurationPane({
   }
 
   return (
-    <div className="space-y-6 p-6 overflow-y-auto h-full">
+    <div className="space-y-6 p-6">
       <div>
         <h2 className="text-2xl font-bold text-foreground mb-6">Configuration</h2>
 
