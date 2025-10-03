@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { api, Configuration } from '@/lib/api';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface ConfigurationPaneProps {
   onGenerate: (config: GenerationConfig) => void;
@@ -125,13 +125,15 @@ export function ConfigurationPane({
     );
   }
 
+  const [showImagePreview, setShowImagePreview] = useState(false);
+
   return (
     <div className="space-y-6 p-6 overflow-y-auto h-full">
       <div>
         <h2 className="text-2xl font-bold text-foreground mb-6">Configuration</h2>
 
         {onImageUpload && (
-          <Card className="p-4 mb-6">
+          <div className="mb-6">
             <Label className="text-sm font-semibold mb-3 block">Upload Image</Label>
             <Input
               type="file"
@@ -145,15 +147,16 @@ export function ConfigurationPane({
                 <img 
                   src={uploadedImage} 
                   alt="Uploaded preview" 
-                  className="w-full h-auto rounded-md border"
+                  className="w-full h-auto rounded-md border cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setShowImagePreview(true)}
                 />
               </div>
             )}
-          </Card>
+          </div>
         )}
 
         {showEnvironment && (
-          <Card className="p-4 mb-6">
+          <div className="mb-6">
             <Label className="text-sm font-semibold mb-3 block">Environment</Label>
             <Select 
               value={selectedEnvironment || (showCustomEnv ? 'custom' : '')} 
@@ -191,10 +194,10 @@ export function ConfigurationPane({
                 rows={3}
               />
             )}
-          </Card>
+          </div>
         )}
 
-        <Card className="p-4 mb-6">
+        <div className="mb-6">
           <Label className="text-sm font-semibold mb-3 block">Subjects</Label>
           {config?.subjects && Object.entries(config.subjects).map(([category, values]) => (
             <div key={category} className="mb-4">
@@ -209,7 +212,7 @@ export function ConfigurationPane({
                     size="sm"
                     onClick={() => toggleSubject(category, value)}
                     disabled={isGenerating}
-                    className="justify-start text-xs"
+                    className="justify-start text-xs whitespace-normal h-auto py-2"
                   >
                     {value.replace(/-/g, ' ')}
                   </Button>
@@ -236,38 +239,40 @@ export function ConfigurationPane({
               rows={3}
             />
           )}
-        </Card>
+        </div>
 
-        <Card className="p-4 mb-6">
+        <div className="mb-6">
           <div className="space-y-4">
             <div>
               <Label htmlFor="include" className="text-sm font-semibold mb-2 block">
                 Include
               </Label>
-              <Input
+              <Textarea
                 id="include"
                 placeholder="Additional elements to include..."
                 value={includePrompt}
                 onChange={(e) => setIncludePrompt(e.target.value)}
                 disabled={isGenerating}
+                rows={3}
               />
             </div>
             <div>
               <Label htmlFor="exclude" className="text-sm font-semibold mb-2 block">
                 Exclude
               </Label>
-              <Input
+              <Textarea
                 id="exclude"
                 placeholder="Elements to exclude..."
                 value={excludePrompt}
                 onChange={(e) => setExcludePrompt(e.target.value)}
                 disabled={isGenerating}
+                rows={3}
               />
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card className="p-4 mb-6">
+        <div className="mb-6">
           <Button
             onClick={handleGenerate}
             disabled={isGenerating}
@@ -283,8 +288,20 @@ export function ConfigurationPane({
               showEnvironment ? 'Generate' : 'Edit Image'
             )}
           </Button>
-        </Card>
+        </div>
       </div>
+
+      {uploadedImage && (
+        <Dialog open={showImagePreview} onOpenChange={setShowImagePreview}>
+          <DialogContent className="max-w-4xl">
+            <img 
+              src={uploadedImage} 
+              alt="Uploaded preview" 
+              className="w-full h-auto"
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

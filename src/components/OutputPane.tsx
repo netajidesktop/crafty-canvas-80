@@ -95,7 +95,7 @@ export function OutputPane({ images, onRemove, isGenerating, generationProgress 
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-hidden">
         {isGenerating && (
           <Card className="p-6 mb-4 bg-muted/50">
             <div className="flex items-center justify-center">
@@ -115,18 +115,20 @@ export function OutputPane({ images, onRemove, isGenerating, generationProgress 
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4 h-full content-start">
           {images.map((image, index) => {
             const imageUrl = `data:image/png;base64,${image.data.replace(/^data:image\/\w+;base64,/, '')}`;
             return (
-              <Card key={image.id} className="overflow-hidden">
-                <img
-                  src={imageUrl}
-                  alt="Generated"
-                  className="w-full h-auto cursor-pointer"
-                  onClick={() => openPreview(imageUrl, index)}
-                />
-                <div className="p-3 flex justify-center">
+              <div key={image.id} className="flex flex-col">
+                <div className="relative rounded-lg overflow-hidden border bg-muted cursor-pointer" style={{ aspectRatio: '1/1' }}>
+                  <img
+                    src={imageUrl}
+                    alt="Generated"
+                    className="w-full h-full object-cover"
+                    onClick={() => openPreview(imageUrl, index)}
+                  />
+                </div>
+                <div className="p-2 flex justify-center">
                   <Button
                     variant="destructive"
                     size="sm"
@@ -136,7 +138,7 @@ export function OutputPane({ images, onRemove, isGenerating, generationProgress 
                     Remove
                   </Button>
                 </div>
-              </Card>
+              </div>
             );
           })}
         </div>

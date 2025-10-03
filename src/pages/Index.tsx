@@ -182,17 +182,17 @@ const Index = () => {
       <main className="p-4">
         <Tabs defaultValue="generation" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="generation">Generation</TabsTrigger>
-            <TabsTrigger value="batch">
+            <TabsTrigger value="generation" className="text-base font-bold">Generation</TabsTrigger>
+            <TabsTrigger value="batch" className="text-base font-bold">
               Batch Editing
             </TabsTrigger>
-            <TabsTrigger value="editing">
+            <TabsTrigger value="editing" className="text-base font-bold">
               Editing
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="generation" className="mt-0">
-            <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 h-[calc(100vh-220px)]">
+            <div className="grid grid-cols-1 lg:grid-cols-[550px_1fr] gap-6 h-[calc(100vh-220px)]">
               <div className="bg-card rounded-lg border overflow-hidden">
           <ConfigurationPane 
             onGenerate={handleGenerate} 
@@ -214,7 +214,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="batch">
-            <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 h-[calc(100vh-220px)]">
+            <div className="grid grid-cols-1 lg:grid-cols-[550px_1fr] gap-6 h-[calc(100vh-220px)]">
               <div className="bg-card rounded-lg border overflow-hidden">
           <ConfigurationPane 
             onGenerate={handleBatchEdit} 
@@ -236,7 +236,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="editing">
-            <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 h-[calc(100vh-220px)]">
+            <div className="grid grid-cols-1 lg:grid-cols-[550px_1fr] gap-6 h-[calc(100vh-220px)]">
               <div className="bg-card rounded-lg border overflow-hidden">
                 <ConfigurationPane
                   onGenerate={handleEdit}
