@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { ConfigurationPane, GenerationConfig } from '@/components/ConfigurationPane';
-import { OutputPane } from '@/components/OutputPane';
+import { OutputPane } from '@/components/GenerationOutputPane';
 import { Navigation } from '@/components/Navigation';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { GenerationConfigurationPane, GenerationConfig } from '@/components/GenerationConfigurationPane';
 
 interface GeneratedImage {
   id: string;
@@ -15,6 +15,7 @@ const GenerationPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState('');
 
+  // The 'config' parameter is now correctly typed
   const handleGenerate = async (config: GenerationConfig) => {
     setIsGenerating(true);
     setImages([]);
@@ -45,7 +46,7 @@ const GenerationPage = () => {
               id: `${Date.now()}-${i}`,
               data: response.image,
             };
-            
+
             setImages((prev) => [...prev, newImage]);
             setGenerationProgress(
               `Generated ${i + 1}/${config.numberOfImages} images...`
@@ -79,22 +80,18 @@ const GenerationPage = () => {
       <main className="p-4">
         <div className="grid grid-cols-1 lg:grid-cols-[550px_1fr] gap-6">
           <div className="bg-card rounded-lg border">
-            <ConfigurationPane 
-              onGenerate={handleGenerate} 
+            <GenerationConfigurationPane
+              onGenerate={handleGenerate}
               isGenerating={isGenerating}
-              showEnvironment={true}
-              showNumberOfImages={false}
             />
           </div>
 
-          <div className="bg-card rounded-lg border">
-            <OutputPane
-              images={images}
-              onRemove={handleRemoveImage}
-              isGenerating={isGenerating}
-              generationProgress={generationProgress}
-            />
-          </div>
+          <OutputPane
+            images={images}
+            onRemove={handleRemoveImage}
+            isGenerating={isGenerating}
+            generationProgress={generationProgress}
+          />
         </div>
       </main>
     </div>

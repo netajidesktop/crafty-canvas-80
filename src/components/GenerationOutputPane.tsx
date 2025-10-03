@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // Import useEffect
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -21,6 +21,36 @@ interface OutputPaneProps {
 export function OutputPane({ images, onRemove, isGenerating, generationProgress }: OutputPaneProps) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [previewIndex, setPreviewIndex] = useState<number>(0);
+
+  // NEW: useEffect to handle image list changes while preview is open
+  useEffect(() => {
+    // Only run this logic if the preview is open
+    if (!previewImage) {
+      return;
+    }
+
+    // If the last image was removed, close the preview
+    if (images.length === 0) {
+      closePreview();
+      return;
+    }
+
+    // If the index is now out of bounds (e.g., the last item was deleted),
+    // clamp it to the new last index.
+    const newIndex = Math.min(previewIndex, images.length - 1);
+
+    // Update the index in state if it changed
+    if (newIndex !== previewIndex) {
+      setPreviewIndex(newIndex);
+    }
+
+    // Update the displayed image to the new one at the corrected index
+    const newImageUrl = `data:image/png;base64,${images[newIndex].data.replace(/^data:image\/\w+;base64,/, '')}`;
+    setPreviewImage(newImageUrl);
+
+    // This effect depends on the 'images' array. It will re-run whenever it changes.
+  }, [images]);
+
 
   const openPreview = (imageUrl: string, index: number) => {
     setPreviewImage(imageUrl);
@@ -45,10 +75,12 @@ export function OutputPane({ images, onRemove, isGenerating, generationProgress 
     setPreviewImage(prevImageUrl);
   };
 
+  // UPDATED: handleRemoveFromPreview is now much simpler
   const handleRemoveFromPreview = () => {
-    const imageToRemove = images[previewIndex];
-    onRemove(imageToRemove.id);
-    closePreview();
+    if (images[previewIndex]) {
+      // Just call the onRemove function. The useEffect will handle the UI update.
+      onRemove(images[previewIndex].id);
+    }
   };
 
   const handleDownloadZip = async () => {
@@ -143,7 +175,7 @@ export function OutputPane({ images, onRemove, isGenerating, generationProgress 
           })}
         </div>
 
-        <Dialog open={!!previewImage} onOpenChange={closePreview}>
+        <Dialog open={!!previewImage} onOpenChange={(isOpen) => !isOpen && closePreview()}>
           <DialogContent className="max-w-4xl w-full p-0">
             {previewImage && (
               <div className="relative">
@@ -172,7 +204,7 @@ export function OutputPane({ images, onRemove, isGenerating, generationProgress 
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                <div className="absolute top-12 left-1/2 transform -translate-x-1/2">
                   <Button
                     variant="destructive"
                     size="sm"

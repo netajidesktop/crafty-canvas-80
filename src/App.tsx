@@ -17,7 +17,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<GenerationPage />} />
+          <Route path="/generation" element={<GenerationPage />} />
           <Route path="/batch-editing" element={<BatchEditingPage />} />
           <Route path="/editing" element={<EditingPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

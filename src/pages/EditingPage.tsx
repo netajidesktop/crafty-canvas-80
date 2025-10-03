@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ConfigurationPane, GenerationConfig } from '@/components/ConfigurationPane';
-import { OutputPane } from '@/components/OutputPane';
+import { EditingConfigurationPane, GenerationConfig } from '@/components/EditingConfigurationPane';
+import { EditingOutputPane } from '@/components/EditingOutputPane';
 import { Navigation } from '@/components/Navigation';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
@@ -11,7 +11,7 @@ interface GeneratedImage {
 }
 
 const EditingPage = () => {
-  const [images, setImages] = useState<GeneratedImage[]>([]);
+  const [image, setImage] = useState<GeneratedImage | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 
@@ -22,7 +22,7 @@ const EditingPage = () => {
     }
 
     setIsGenerating(true);
-    setImages([]);
+    setImage(null);
 
     try {
       const request = {
@@ -42,8 +42,8 @@ const EditingPage = () => {
           id: `${Date.now()}`,
           data: response.image,
         };
-        
-        setImages([newImage]);
+
+        setImage(newImage);
         toast.success('Image edited successfully');
       } else {
         toast.error(response.message || 'Failed to edit image');
@@ -56,8 +56,8 @@ const EditingPage = () => {
     }
   };
 
-  const handleRemoveImage = (id: string) => {
-    setImages((prev) => prev.filter((img) => img.id !== id));
+  const handleRemoveImage = () => {
+    setImage(null);
   };
 
   return (
@@ -66,23 +66,21 @@ const EditingPage = () => {
       <main className="p-4">
         <div className="grid grid-cols-1 lg:grid-cols-[550px_1fr] gap-6">
           <div className="bg-card rounded-lg border">
-            <ConfigurationPane
+            {/* UPDATED: Use the new EditConfigurationPane component */}
+            <EditingConfigurationPane
               onGenerate={handleEdit}
               isGenerating={isGenerating}
-              showEnvironment={false}
-              showNumberOfImages={false}
               uploadedImage={uploadedImage}
               onImageUpload={setUploadedImage}
             />
           </div>
-
-          <div className="bg-card rounded-lg border">
-            <OutputPane
-              images={images}
-              onRemove={handleRemoveImage}
-              isGenerating={isGenerating}
-            />
-          </div>
+          {/* <div className="bg-card rounded-lg border"> */}
+          <EditingOutputPane
+            image={image}
+            onRemove={handleRemoveImage}
+            isGenerating={isGenerating}
+          />
+          {/* </div> */}
         </div>
       </main>
     </div>

@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { ConfigurationPane, GenerationConfig } from '@/components/ConfigurationPane';
-import { OutputPane } from '@/components/OutputPane';
+import { useState, useEffect } from 'react';
+// UPDATED: Import the new, specific component and its config type
+import { BatchEditingConfigurationPane, GenerationConfig } from '@/components/BatchEditingConfigurationPane';
+import { OutputPane } from '@/components/GenerationOutputPane';
 import { Navigation } from '@/components/Navigation';
-import { api } from '@/lib/api';
+import { api, FolderInfo } from '@/lib/api';
 import { toast } from 'sonner';
 
 interface GeneratedImage {
@@ -14,62 +15,45 @@ const BatchEditingPage = () => {
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState('');
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [folders, setFolders] = useState<FolderInfo[]>([]);
+  const [selectedFolder, setSelectedFolder] = useState<string>('');
+  const [imageCount, setImageCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchFolders = async () => {
+      try {
+        const response = await api.getFolders();
+        if (response.status === 'success' && response.data) {
+          setFolders(response.data);
+        } else {
+          toast.error('Failed to load folders.');
+        }
+      } catch (error) {
+        console.error('Error fetching folders:', error);
+        toast.error('Failed to load folders from the server.');
+      }
+    };
+    fetchFolders();
+  }, []);
+
+  const handleFolderSelect = (folderName: string) => {
+    setSelectedFolder(folderName);
+    const folder = folders.find(f => f.name === folderName);
+    setImageCount(folder ? folder.image_count : null);
+  };
 
   const handleBatchEdit = async (config: GenerationConfig) => {
-    if (!uploadedImage) {
-      toast.error('Please upload an image first');
+    if (!selectedFolder) {
+      toast.error('Please select a folder first');
       return;
     }
-
-    setIsGenerating(true);
-    setImages([]);
-    setGenerationProgress(`Generating 0/${config.numberOfImages} images...`);
-
-    const generatePromises = [];
-
-    for (let i = 0; i < config.numberOfImages; i++) {
-      const promise = (async () => {
-        try {
-          const request = {
-            image_b64: uploadedImage,
-            subjects: {
-              type: config.customSubject ? 'custom' : 'predefined',
-              data: config.customSubject || config.subjects,
-            },
-            include: config.include,
-            exclude: config.exclude,
-          };
-
-          const response = await api.editImage(request);
-
-          if (response.status === 'success' && response.image) {
-            const newImage = {
-              id: `${Date.now()}-${i}`,
-              data: response.image,
-            };
-            
-            setImages((prev) => [...prev, newImage]);
-            setGenerationProgress(
-              `Generated ${i + 1}/${config.numberOfImages} images...`
-            );
-          } else {
-            toast.error(response.message || `Failed to generate image ${i + 1}`);
-          }
-        } catch (error) {
-          console.error(`Error generating image ${i + 1}:`, error);
-          toast.error(`Failed to generate image ${i + 1}`);
-        }
-      })();
-
-      generatePromises.push(promise);
+    if (!imageCount || imageCount === 0) {
+      toast.error('The selected folder has no images to edit.');
+      return;
     }
-
-    await Promise.all(generatePromises);
-
-    setIsGenerating(false);
-    setGenerationProgress('');
-    toast.success(`Generated ${config.numberOfImages} image(s)`);
+    // Your batch editing logic will go here...
+    console.log("Starting batch edit with config:", config);
+    toast.info(`Starting batch edit for ${imageCount} images in ${selectedFolder}...`);
   };
 
   const handleRemoveImage = (id: string) => {
@@ -82,16 +66,16 @@ const BatchEditingPage = () => {
       <main className="p-4">
         <div className="grid grid-cols-1 lg:grid-cols-[550px_1fr] gap-6">
           <div className="bg-card rounded-lg border">
-            <ConfigurationPane 
-              onGenerate={handleBatchEdit} 
+            {/* UPDATED: Use the new BatchEditConfigurationPane component */}
+            <BatchEditingConfigurationPane
+              onGenerate={handleBatchEdit}
               isGenerating={isGenerating}
-              showEnvironment={false}
-              showNumberOfImages={false}
-              uploadedImage={uploadedImage}
-              onImageUpload={setUploadedImage}
+              folders={folders}
+              selectedFolder={selectedFolder}
+              onFolderSelect={handleFolderSelect}
+              imageCount={imageCount}
             />
           </div>
-
           <div className="bg-card rounded-lg border">
             <OutputPane
               images={images}
