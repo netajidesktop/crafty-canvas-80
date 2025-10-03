@@ -194,12 +194,12 @@ const Index = () => {
           <TabsContent value="generation" className="mt-0">
             <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 h-[calc(100vh-220px)]">
               <div className="bg-card rounded-lg border overflow-hidden">
-                <ConfigurationPane
-                  onGenerate={handleGenerate}
-                  isGenerating={isGenerating}
-                  showEnvironment={true}
-                  showNumberOfImages={true}
-                />
+          <ConfigurationPane 
+            onGenerate={handleGenerate} 
+            isGenerating={isGenerating}
+            showEnvironment={true}
+            showNumberOfImages={false}
+          />
               </div>
 
               <div className="bg-card rounded-lg border overflow-hidden">
@@ -216,14 +216,12 @@ const Index = () => {
           <TabsContent value="batch">
             <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 h-[calc(100vh-220px)]">
               <div className="bg-card rounded-lg border overflow-hidden">
-                <ConfigurationPane
-                  onGenerate={handleBatchEdit}
-                  isGenerating={isGenerating}
-                  showEnvironment={false}
-                  showNumberOfImages={true}
-                  uploadedImage={uploadedImage}
-                  onImageUpload={setUploadedImage}
-                />
+          <ConfigurationPane 
+            onGenerate={handleBatchEdit} 
+            isGenerating={isGenerating}
+            showEnvironment={false}
+            showNumberOfImages={false}
+          />
               </div>
 
               <div className="bg-card rounded-lg border overflow-hidden">

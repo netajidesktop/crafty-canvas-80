@@ -45,7 +45,7 @@ export function ConfigurationPane({
   const [showCustomSubject, setShowCustomSubject] = useState(false);
   const [includePrompt, setIncludePrompt] = useState('');
   const [excludePrompt, setExcludePrompt] = useState('');
-  const [numberOfImages, setNumberOfImages] = useState(1);
+  const [numberOfImages, setNumberOfImages] = useState(6);
 
   useEffect(() => {
     loadConfiguration();
@@ -268,57 +268,21 @@ export function ConfigurationPane({
         </Card>
 
         <Card className="p-4 mb-6">
-          {showNumberOfImages && (
-            <>
-              <Label htmlFor="numImages" className="text-sm font-semibold mb-2 block">
-                Number of Images (1-6)
-              </Label>
-              <div className="flex gap-3 mb-3">
-                <Input
-                  id="numImages"
-                  type="number"
-                  min="1"
-                  max="6"
-                  value={numberOfImages}
-                  onChange={(e) => setNumberOfImages(Math.min(6, Math.max(1, parseInt(e.target.value) || 1)))}
-                  disabled={isGenerating}
-                  className="flex-1"
-                />
-                <Button
-                  onClick={handleGenerate}
-                  disabled={isGenerating}
-                  size="lg"
-                  className="flex-1"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    'Generate'
-                  )}
-                </Button>
-              </div>
-            </>
-          )}
-          {!showNumberOfImages && (
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              size="lg"
-              className="w-full"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Editing...
-                </>
-              ) : (
-                'Edit Image'
-              )}
-            </Button>
-          )}
+          <Button
+            onClick={handleGenerate}
+            disabled={isGenerating}
+            size="lg"
+            className="w-full"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {showEnvironment ? 'Generating...' : 'Editing...'}
+              </>
+            ) : (
+              showEnvironment ? 'Generate' : 'Edit Image'
+            )}
+          </Button>
         </Card>
       </div>
     </div>
